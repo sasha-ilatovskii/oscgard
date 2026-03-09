@@ -1,0 +1,1562 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>oscgard — virtual monome devices for norns</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&family=Pixelify+Sans:wght@700&display=swap"
+    rel="stylesheet">
+
+
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --fg: #f3f4f5;
+      --accent: #F19E47;
+      --muted: #666;
+      --card-bg: #141414;
+      --border: #222;
+      --code-bg: #1a1a1a;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    *::-webkit-scrollbar {
+      width: 4px;
+      height: 4px;
+    }
+
+    *::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 4px;
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+      background: var(--muted);
+    }
+
+    body {
+      font-family: "Kode Mono", monospace;
+      font-optical-sizing: auto;
+      background: var(--bg);
+      color: var(--fg);
+    }
+
+    h1,
+    h2,
+    h3 {
+      color: var(--accent);
+      padding: 0;
+      margin: 0;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .accent-font {
+      font-family: "Pixelify Sans", sans-serif;
+    }
+
+    p {
+      letter-spacing: 8%;
+      margin-bottom: 1em;
+    }
+
+    p:last-child {
+      margin-bottom: 0;
+    }
+
+    @keyframes float {
+
+      0%,
+      100% {
+        translate: 0 0;
+      }
+
+      50% {
+        translate: 0 -6px;
+      }
+    }
+
+    /* Menu scroller */
+    .menu-scroller {
+      position: relative;
+      height: 10em;
+      overflow: hidden;
+    }
+
+    .menu-scroller::before,
+    .menu-scroller::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 35%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    .menu-scroller::before {
+      top: 0;
+      background: linear-gradient(to bottom, var(--bg), transparent);
+    }
+
+    .menu-scroller::after {
+      bottom: 0;
+      background: linear-gradient(to top, var(--bg), transparent);
+    }
+
+    section .menu-scroller ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      text-align: center;
+      will-change: transform;
+      color: var(--fg);
+      font-size: 1rem;
+    }
+
+    section .menu-scroller ul li {
+      font-family: "Pixelify Sans", sans-serif;
+      font-size: 1.4em;
+      line-height: 2;
+      white-space: nowrap;
+      color: var(--fg);
+      margin-bottom: 0;
+    }
+
+    section .menu-scroller ul li.active::before {
+      content: '\203a';
+      margin-right: 1em;
+    }
+
+    /* Hero */
+    .hero {
+      position: relative;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100dvh;
+      padding: 0 20%;
+      background-image:
+        linear-gradient(to bottom, transparent 80%, var(--bg) 100%),
+        radial-gradient(rgba(255, 255, 255, 0.2) 1px, transparent 1px);
+      background-size: 100% 100%, 16px 16px;
+
+    }
+
+
+    .hero canvas {
+      width: 100%;
+      aspect-ratio: 5;
+      image-rendering: pixelated;
+      mix-blend-mode: lighten;
+    }
+
+    .hero h1 {
+      visibility: hidden;
+      height: 0;
+    }
+
+    .hero .tagline {
+      font-size: 2.5em;
+      line-height: 1;
+      color: var(--accent);
+      text-shadow: 0 1px 10px rgba(0, 0, 0, 0.8);
+    }
+
+    .hero .badges {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    main {
+      max-width: 80%;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    /* Sections */
+    section {
+      display: flex;
+      padding: 8em 0;
+    }
+
+    section h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1em;
+      letter-spacing: -0.02em;
+    }
+
+    section h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin: 32px 0 12px;
+    }
+
+    section ul {
+      color: var(--muted);
+      margin: 0 0 16px 20px;
+      font-size: 0.9rem;
+    }
+
+    section ul li {
+      margin-bottom: 6px;
+    }
+
+    /* Feature grid */
+    .features {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-top: 24px;
+    }
+
+    .feature {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 24px;
+    }
+
+    .feature h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      margin: 0 0 8px;
+    }
+
+    .feature p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    /* Device cards (grid vs arc) */
+    .device-cards {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin: 24px 0;
+    }
+
+    .device-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px 24px;
+    }
+
+    .device-card .device-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .device-card h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin: 0 0 12px;
+    }
+
+    .device-card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    .device-card .spec-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      font-size: 0.8rem;
+    }
+
+    .device-card .spec-list li {
+      padding: 6px 0;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      margin: 0;
+    }
+
+    .device-card .spec-list li span:first-child {
+      color: var(--muted);
+    }
+
+    .device-card .spec-list li span:last-child {
+      color: var(--fg);
+      font-weight: 500;
+    }
+
+    /* How it works */
+    .diagram {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin: 32px 0;
+    }
+
+    .diagram .node {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      text-align: center;
+      min-width: 160px;
+    }
+
+    .diagram .node .label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 4px;
+    }
+
+    .diagram .node .name {
+      font-weight: 600;
+      font-size: 1rem;
+    }
+
+    .diagram .node .sub {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .diagram .arrow {
+      color: var(--accent);
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    /* Code block */
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 8px;
+      overflow-x: auto;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      margin: 16px 0;
+    }
+
+    code {
+      font-family: 'SF Mono', 'Fira Code', 'JetBrains Mono', monospace;
+    }
+
+    .inline-code {
+      background: var(--code-bg);
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 0.85em;
+    }
+
+    /* Setup steps */
+    .steps {
+      counter-reset: step;
+      list-style: none;
+      margin: 24px 0;
+    }
+
+    .steps li {
+      counter-increment: step;
+      padding: 16px 0 16px 48px;
+      position: relative;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .steps li:last-child {
+      border-bottom: none;
+    }
+
+    .steps li::before {
+      content: counter(step);
+      position: absolute;
+      left: 0;
+      top: 16px;
+      width: 32px;
+      height: 32px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--accent);
+    }
+
+    .steps li strong {
+      color: var(--fg);
+    }
+
+    .steps li p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* Specs table */
+    .specs {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 24px 0;
+      font-size: 0.9rem;
+    }
+
+    .specs th,
+    .specs td {
+      text-align: left;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .specs th {
+      color: var(--muted);
+      font-weight: 500;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .specs td:last-child {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* Clients callout */
+    .clients-callout {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      margin: 32px 0;
+    }
+
+    .clients-callout h3 {
+      font-size: 1rem;
+      margin: 0 0 12px;
+    }
+
+    .clients-callout p {
+      font-size: 0.9rem;
+      margin: 0;
+    }
+
+    /* CTA section */
+    .cta-section h2 {
+      text-align: center;
+    }
+
+    .cta-paths {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      margin-top: 32px;
+    }
+
+    .cta-card {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .cta-card .cta-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
+
+    .cta-card h3 {
+      font-size: 1.15rem;
+      font-weight: 600;
+      margin: 0 0 12px;
+    }
+
+    .cta-card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 0 0 24px;
+    }
+
+    .cta-button {
+      display: inline-block;
+      padding: 10px 28px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: opacity 0.15s;
+      background: var(--accent);
+      color: #0a0a0a;
+    }
+
+    .cta-button:hover {
+      opacity: 0.85;
+      text-decoration: none;
+    }
+
+    .cta-button-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--fg);
+    }
+
+    .cta-button-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .cta-divider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 24px;
+      flex-shrink: 0;
+    }
+
+    .cta-divider span {
+      font-size: 0.85rem;
+      color: var(--muted);
+      text-transform: lowercase;
+      letter-spacing: 0.05em;
+    }
+
+    /* Footer */
+    footer {
+      padding: 40px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    footer .links {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 16px;
+    }
+
+    /* Layout helpers */
+    .section-col {
+      flex-direction: column;
+    }
+
+    .flex-half {
+      flex: 1 1 0px;
+    }
+
+    /* Getting started */
+    .install-options {
+      display: flex;
+      gap: 2%;
+      flex-direction: column;
+      align-items: flex-start;
+      overflow: hidden;
+    }
+
+    .install-options li {
+      max-width: 100%;
+    }
+
+    #success-step {
+      color: var(--accent);
+      position: relative;
+    }
+
+    /* Protocol section */
+    .section-protocol {
+      gap: 4%;
+      align-items: center;
+      padding: 4em 0;
+    }
+
+    .protocol-cta {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      font-size: 2em;
+    }
+
+    .protocol-cta-build {
+      line-height: 1;
+      text-align: right;
+    }
+
+    .protocol-cta-or {
+      line-height: 1;
+      font-size: 2em;
+      align-self: center;
+      transform: translate(-65%);
+    }
+
+    .protocol-cta-get {
+      line-height: 1;
+      color: var(--accent);
+    }
+
+    .touchosc-link {
+      border-bottom: 3px var(--accent) dashed;
+      position: relative;
+    }
+
+    .touchosc-link:hover {
+      text-decoration: none;
+      position: relative;
+      color: #f3f4f5;
+      border-bottom: 3px #f3f4f5 dashed;
+    }
+
+    .touchosc-link img {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .touchosc-link:hover img {
+      opacity: 0;
+      transform: scale(0.01);
+    }
+
+    .pointer-img {
+      width: 2em;
+      position: absolute;
+      left: 45%;
+      bottom: 0;
+      transform: translateY(95%);
+      animation: float 2s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    /* Connect section */
+    .section-connect {
+      gap: 4%;
+      align-items: center;
+    }
+
+    /* How it works */
+    .section-howitworks {
+      align-items: center;
+      gap: 4%;
+    }
+
+    .diagram-vertical {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .arrow-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5em;
+    }
+
+    .arrow-label {
+      font-size: 0.5em;
+      margin-top: 0.1em;
+    }
+
+    /* CTA section */
+    .cta-section {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .cta-headline {
+      color: var(--fg);
+    }
+
+    .cta-tagline {
+      font-size: 2em;
+    }
+
+    .cta-highlight {
+      color: var(--accent);
+    }
+
+    /* Support section */
+    .support-section {
+      text-align: center;
+      align-items: center;
+      gap: 2%;
+    }
+
+    .support-row {
+      display: flex;
+      gap: 24px;
+      width: 100%;
+      margin-top: 16px;
+    }
+
+    .support-card {
+      flex: 1;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+    }
+
+    .support-card h3 {
+      margin: 0 0 12px;
+    }
+
+    .support-card p {
+      font-size: 0.85rem;
+      color: var(--muted);
+      margin: 0 0 20px;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .social-links a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--fg);
+      transition: border-color 0.15s, color 0.15s;
+    }
+
+    .social-links a:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    .social-links a svg {
+      display: block;
+    }
+
+    /* Responsive — tablet */
+    @media (max-width: 900px) {
+      .hero {
+        padding: 0 8%;
+      }
+
+      .hero .tagline {
+        font-size: 1.8em;
+      }
+
+      main {
+        max-width: 90%;
+      }
+
+      section {
+        padding: 5em 0;
+      }
+
+      .section-protocol {
+        flex-direction: column;
+        gap: 8em;
+      }
+
+      .protocol-cta {
+        font-size: 2.5em;
+        align-items: center;
+      }
+
+      .protocol-cta-build {
+        text-align: center;
+      }
+
+      .protocol-cta-or {
+        transform: none;
+      }
+
+      .section-connect {
+        flex-direction: column;
+        gap: 2em;
+      }
+
+      .section-howitworks {
+        flex-direction: column;
+        gap: 2em;
+      }
+
+      .section-row.support-section {
+        flex-direction: column !important;
+        gap: 2em !important;
+      }
+
+      .support-row {
+        flex-direction: column;
+      }
+
+      .cta-tagline {
+        font-size: 1.5em;
+      }
+
+      .cta-paths {
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .cta-divider {
+        padding: 16px 0;
+      }
+    }
+
+    /* Responsive — mobile */
+    @media (max-width: 520px) {
+      .hero {
+        padding: 0 5%;
+      }
+
+      .hero .tagline {
+        font-size: 1.2em;
+      }
+
+      main {
+        max-width: 95%;
+      }
+
+      section {
+        padding: 3em 0;
+      }
+
+      .protocol-cta {
+        font-size: 1.2em;
+      }
+
+      .cta-tagline {
+        font-size: 1.1em;
+      }
+
+      .device-cards {
+        grid-template-columns: 1fr;
+      }
+
+      .device-card {
+        padding: 20px 16px;
+      }
+
+      .diagram {
+        flex-direction: column;
+      }
+
+      .diagram .arrow {
+        transform: rotate(90deg);
+      }
+
+      .diagram .node {
+        min-width: auto;
+        width: 100%;
+      }
+
+      pre {
+        font-size: 0.75rem;
+        padding: 14px;
+      }
+
+      .clients-callout {
+        padding: 20px;
+      }
+
+      .cta-card {
+        padding: 20px;
+      }
+
+      .support-card {
+        padding: 20px;
+      }
+
+      .steps li {
+        padding: 12px 0 12px 40px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Hero -->
+  <header class="hero">
+
+    <canvas id="asgard" aria-hidden="true"></canvas>
+    <div class="container">
+      <h1>Oscgard</h1>
+      <h2 class="tagline accent-font">A norns mod that creates virtual
+        grid and arc devices over OSC</h2>
+
+    </div>
+  </header>
+
+  <main class="container">
+    <section class="section-col">
+      <h2>Getting started</h2>
+      <ol style="margin-left: 2em;">
+        <li>
+          <p>Install the mod</p>
+          <ul class="install-options">
+            <li>
+              via maiden
+              <pre><code>;install https://github.com/sasha-ilatovskii/oscgard</code></pre>
+            </li>
+            <li>
+              git clone to dust
+              <pre><code>cd ~/dust/code && git clone https://github.com/sasha-ilatovskii/oscgard</code></pre>
+            </li>
+            <li>
+              <a>download zip</a> and extract to dust/code
+            </li>
+          </ul>
+        </li>
+        <li>
+          Enable it in SYSTEM > MODS and restart the norns
+        </li>
+        <li>
+          Get and run a client app
+          <p>You need an OSC app that implements the oscgard/serialosc device
+            protocol.<br />See compatible clients below.</p>
+        </li>
+        <li>
+          Discover devices
+          <p>Open the oscgard mod menu on norns (SYSTEM > MODS > OSCGARD).<br />It will
+            scan your network for OSC devices.</p>
+        </li>
+        <li>
+          Assign virtual device to a port
+          <p>Choose grid or arc, and vport to use (1-4) and pick the discovered device from the
+            list.
+          </p>
+        </li>
+        <li>
+          Patch your script
+          <p>
+            Add the include line at the top of your script to route API calls through oscgard
+          <ul>
+            <li>
+              for grid
+              <pre><code>local grid = include("oscgard/lib/grid")</code></pre>
+            </li>
+            <li>
+              for arc
+              <pre><code>local arc = include("oscgard/lib/arc")</code></pre>
+            </li>
+          </ul>
+          </p>
+        </li>
+        <li id="success-step">
+          You're good and have the emulated device up and running!
+        </li>
+      </ol>
+    </section>
+    <section class="section-protocol">
+      <div class="flex-half protocol-cta">
+        <span class="accent-font protocol-cta-build">
+          BUILD
+          your
+          own<br />client app</span>
+        <span class="accent-font protocol-cta-or">
+          OR
+        </span>
+        <span class="accent-font protocol-cta-get">
+          GET<br />
+          the full-featured<br />
+          <a href="#" class="touchosc-link">
+            TouchOSC project
+            <img class="pointer-img"
+              src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA3NiAxMDEiPgogIDxwYXRoIGZpbGw9IiM3NzciIGQ9Ik03MiAzOXE0IDEgNCA0djI5cTAgNC00IDR2OXEwIDQtNCA0djhxMCA0LTQgNEgyMnEtMyAwLTQtNHYtOHoiLz4KICA8cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjggMHE0IDEgNCA0IDQgMSA0IDR2MTNoNXE0IDEgNCA0aDlxNCAxIDQgNGg0cTQgMSA0IDQgNCAxIDQgNCA0IDEgNCA0djI5cTAgNC00IDR2OXEwIDQtNCA0djhxMCA0LTQgNEgyMHEtMyAwLTQtNHYtOHEtMyAwLTQtNHYtNXEtMyAwLTQtNHYtNXEtMyAwLTQtNHYtM3EtMyAwLTQtNFY0NXExLTMgNC00IDEtMyA0LTRoNFY4cTEtMyA0LTQgMS0zIDQtNHoiLz4KICA8cGF0aCBmaWxsPSIjMDAwIiBkPSJNMjQgOTFoMzR2LThoNHYxMkgyMFY4M2g0em0tNC04aC00di05aDR6bTQ2IDBoLTRWNzBoNHptLTUwLTloLTR2LTloNHptNTQtNGgtNFY0MWg0em0tNTgtNUg4di03aDR6bS00LTdINFY0NWg0em0xMiAwaC00VjQ1SDh2LTRoOFY4aDR6bTQyLTIxaC00djEyaC00VjMzaDh6TTMyIDI1aDl2NGgtOXYxNmgtNFY4aDR6bTIyIDhoLTl2MTJoLTRWMjloMTN6bTEyIDhoLTR2LTRoNHpNMjggOGgtOFY0aDh6Ii8+Cjwvc3ZnPgo="
+              alt="SVG image" />
+          </a>
+        </span>
+      </div>
+      <div class="flex-half">
+        <h2>SerialOSC protocol compliant</h2>
+        <p>
+          The mod speaks the standard serialosc OSC protocol —
+          the same protocol real monome devices use.</p>
+        <p>Any client that implements the serialosc device spec can connect. On top of this, oscgard
+          adds an optimized bulk transfer mode for high-performance updates over WiFi.</p>
+      </div>
+    </section>
+    <section class="section-connect">
+      <div class="flex-half">
+        <h2>Zero-effort connect</h2>
+        <p>
+          Oscgard uses zeroconf (avahi-browse) to find OSC client devices on your network.
+          Discovered devices appear in the mod menu, where you assign them to ports just like
+          plugging in real hardware.</p>
+      </div>
+      <div class="flex-half">
+        <div class="menu-scroller" id="menuScroller">
+          <ul>
+            <li>ADD DEVICE</li>
+            <li>GRID or ARC</li>
+            <li>SELECT VPORT</li>
+            <li>SCANNING</li>
+            <li>GRID0001</li>
+            <li>CONNECTED</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+    <!-- Devices -->
+    <section class="section-col">
+      <div>
+        <h2>Both GRID and ARC supported</h2>
+        <p>Oscgard emulates two types of monome hardware. Each is a distinct virtual device with its
+          own protocol, API, and port assignment.
+        </p>
+        <p>
+          Up to 4 virtual devices can be connected simultaneously across both types — for example, 2
+          grids and 2 arcs, or any other combination.</p>
+      </div>
+      <div class="device-cards">
+        <div class="device-card">
+          <div class="device-label">Virtual device</div>
+          <h3>Grid</h3>
+          <p>The monome grid is a minimalist instrument — a matrix of backlit silicone buttons with
+            no labels, no velocity, just press/release and 16 levels of LED brightness.</p>
+          <p>Oscgard
+            virtualizes the full spec: key input, LED feedback, all three editions, hardware
+            rotation, and tilt sensors.</p>
+          <ul class="spec-list">
+            <li><span>Editions</span><span>64 / 128 / 256</span></li>
+            <li><span>Device input</span><span>Buttons + Sensors</span></li>
+            <li><span>LED feedback</span><span>16 brightness levels</span></li>
+            <li><span>Rotation</span><span>0 / 90 / 180 / 270</span></li>
+          </ul>
+        </div>
+        <div class="device-card">
+          <div class="device-label">Virtual device</div>
+          <h3>Arc</h3>
+          <p>The monome arc is a set of high-resolution optical encoders, each ringed by 64
+            individually addressable LEDs. Designed for continuous control — filters, sequences,
+            waveforms.</p>
+          <p>Oscgard virtualizes encoder delta input and per-LED ring feedback for
+            both
+            editions.</p>
+          <ul class="spec-list">
+            <li><span>Editions</span><span>2 / 4 encoders</span></li>
+            <li><span>Device input</span><span>Encoders + Push-buttons</span></li>
+            <li><span>LED feedback</span><span>64 LEDs per ring</span></li>
+            <li><span>Ring modes</span><span>All / map / range</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="section-howitworks">
+      <div class="flex-half">
+        <h2>How it works</h2>
+        <p>
+          The mod registers as a norns system hook, intercepting OSC traffic. When a client
+          connects, oscgard creates a virtual device that looks exactly like real monome hardware to
+          any norns script.
+        </p>
+        <p>LED updates from scripts are packed into efficient bulk messages and sent to the client.
+        </p>
+        <p>Button presses and encoder turns from the client are transformed and delivered to the
+          script’s callbacks.</p>
+      </div>
+
+      <div class="diagram flex-half diagram-vertical">
+        <div class="node">
+          <div class="label">Your device</div>
+          <div class="name">OSC client</div>
+        </div>
+        <div class="arrow arrow-row">&varr;
+          <span class="arrow-label">osc messages</span>
+        </div>
+        <div class="node">
+          <div class="label">norns mod</div>
+          <div class="name">OSCgard</div>
+        </div>
+        <div class="arrow arrow-row">&varr;
+          <span class="arrow-label">grid / arc API</span>
+        </div>
+        <div class="node">
+          <div class="label">NORNS</div>
+          <div class="name">Running script</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Performance -->
+    <section class="section-col">
+      <h2>Built for WiFi</h2>
+      <p>One message per refresh. 128x fewer packets than other emulators.<br />Any rate,
+        no tearing.
+      </p>
+      <table class="specs">
+        <thead>
+          <tr>
+            <th>Metric</th>
+            <th>Others</th>
+            <th>oscgard</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Messages for full refresh</td>
+            <td>up to 128</td>
+            <td>1</td>
+          </tr>
+          <tr>
+            <td>Bytes for full refresh</td>
+            <td>~2,560</td>
+            <td>~140</td>
+          </tr>
+          <tr>
+            <td>Atomicity</td>
+            <td>Sequential</td>
+            <td>Atomic</td>
+          </tr>
+          <tr>
+            <td>Refresh rate</td>
+            <td>-</td>
+            <td>Adjust to your network</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <!-- Script integration -->
+    <section class="section-col">
+      <h2>Drop-in API</h2>
+      <p>Oscgard provides drop-in replacements for the norns grid and arc modules. The API is
+        identical to real hardware.</p>
+      <div>
+        <pre><code><span style="color:#666">-- Example script for Grid emulation</span>
+local grid = include("oscgard/lib/grid")
+<span style="color:#666">-- or with hardware fallback
+-- local grid = util.file_exists(_path.code.."oscgard") and include("oscgard/lib/grid") or grid</span>
+local g = grid.connect()
+
+g.key = function(x, y, z)
+  g:led(x, y, z * 15)
+  g:refresh()
+end</code></pre>
+        <pre><code><span style="color:#666">-- Example script for Arc emulation</span>
+local arc = include("oscgard/lib/arc")
+<span style="color:#666">-- or with hardware fallback
+-- local arc = util.file_exists(_path.code.."oscgard") and include("oscgard/lib/arc") or arc</span>
+local a = arc.connect()
+local pos = {}
+a.delta = function(n, d)
+  <span style="color:#666">-- light up ring led based on rotation</span>
+  if pos[n] == nil then
+    pos[n] = 0
+  end
+  pos[n] = (pos[n] + d) % 64
+  a:led(n, pos, 15)
+  a:refresh()
+end</code></pre>
+      </div>
+
+    </section>
+
+    <!-- CTA: two paths -->
+    <section class="cta-section">
+      <h2 class="cta-headline">One more thing...</h2>
+      <a class="accent-font cta-tagline">THE MOST POWERFUL TOUCHOSC
+        PROJECT<br />FOR EMULATING MONOME CONTROLLERS</a>
+
+      <div class="cta-paths">
+        <div class="cta-card cta-buy">
+          <div class="cta-label">Ready to play</div>
+          <h3>TouchOSC template</h3>
+          <p>Polished grid and arc emulator project for <a
+              href="https://hexler.net/touchosc">TouchOSC</a>.
+          <ul>
+            <li>Configurable sizes and layouts</li>
+            <li>Tilt sensors support</li>
+            <li>Optimized performance</li>
+            <li class="cta-highlight">And the best part — it works out
+              of the box!</li>
+          </ul>
+          </p>
+          <a href="#" class="cta-button">Get on Gumroad</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Support -->
+    <section class="section-row support-section">
+      <div class="flex-half" style="text-align: left;">
+        <h2>Support the project</h2>
+        <p>Oscgard is free and open source.</p>
+        <p>If it saved you from buying hardware or just made your
+          norns setup more fun, consider saying thanks.</p>
+      </div>
+      <div class="support-row flex-half">
+        <div class="support-card" style="display: flex;flex-direction: column;">
+          <h3>Donate</h3>
+          <p>Buy me a coffee, fund a feature, or just show some love.</p>
+          <div style="flex: 1 1 auto; display: flex; align-items: center;justify-content: center;">
+            <a href="#" class="cta-button">Donate</a>
+          </div>
+        </div>
+        <div class="support-card">
+          <h3>Follow along</h3>
+          <p>Updates, demos, and behind-the-scenes stuff.</p>
+          <div class="social-links">
+            <a href="#" aria-label="Instagram"><svg width="24" height="24" viewBox="0 0 48 48"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M24 4.322c6.413 0 7.172.028 9.694.14 2.344.104 3.61.497 4.453.826 1.116.43 1.922.956 2.757 1.79.843.844 1.36 1.641 1.79 2.757.329.843.723 2.118.827 4.462.112 2.531.14 3.29.14 9.703 0 6.413-.028 7.172-.14 9.694-.104 2.344-.498 3.61-.826 4.453-.431 1.116-.957 1.922-1.79 2.757-.845.843-1.642 1.36-2.758 1.79-.843.329-2.118.723-4.462.826-2.531.113-3.29.14-9.694.14-6.412 0-7.172-.027-9.694-.14-2.343-.103-3.609-.497-4.453-.825-1.115-.431-1.922-.957-2.756-1.791-.844-.844-1.36-1.641-1.791-2.756-.328-.844-.722-2.119-.825-4.454-.113-2.531-.14-3.29-.14-9.693 0-6.413.027-7.172.14-9.694.103-2.344.497-3.61.825-4.453.431-1.116.957-1.922 1.79-2.757.845-.843 1.642-1.36 2.757-1.79.844-.329 2.119-.722 4.454-.826 2.522-.112 3.281-.14 9.693-.14zM24 0c-6.516 0-7.331.028-9.89.14-2.551.114-4.304.527-5.822 1.117-1.585.619-2.926 1.435-4.257 2.766C2.69 5.362 1.875 6.703 1.256 8.278.666 9.806.253 11.55.14 14.1.028 16.669 0 17.484 0 24s.028 7.331.14 9.89c.114 2.551.527 4.304 1.117 5.823.619 1.584 1.435 2.925 2.766 4.256 1.331 1.331 2.672 2.157 4.247 2.766 1.528.59 3.272 1.003 5.822 1.116 2.56.113 3.375.14 9.891.14s7.331-.027 9.89-.14c2.551-.113 4.304-.526 5.823-1.116 1.575-.609 2.916-1.435 4.247-2.766 1.331-1.331 2.156-2.672 2.766-4.247.59-1.528 1.003-3.272 1.116-5.822.113-2.56.14-3.375.14-9.891s-.027-7.331-.14-9.89c-.113-2.552-.526-4.305-1.116-5.823-.609-1.585-1.435-2.926-2.766-4.257C42.637 2.7 41.297 1.875 39.722 1.266 38.194.675 36.45.263 33.9.15 31.331.028 30.516 0 24 0z"
+                  fill="currentColor" />
+                <path
+                  d="M24 11.672A12.328 12.328 0 1 0 24 36.328 12.328 12.328 0 0 0 24 11.672zM24 32c-4.416 0-8-3.584-8-8s3.584-8 8-8 8 3.584 8 8-3.584 8-8 8z"
+                  fill="currentColor" />
+                <circle cx="36.816" cy="11.184" r="2.878" fill="currentColor" />
+              </svg></a>
+            <a href="#" aria-label="YouTube"><svg width="24" height="24" viewBox="0 0 48 48"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M47.5219 14.4001C47.5219 14.4001 47.0531 11.0907 45.6094 9.6376C43.7812 7.7251 41.7375 7.71572 40.8 7.60322C34.0875 7.11572 24.0094 7.11572 24.0094 7.11572H23.9906C23.9906 7.11572 13.9125 7.11572 7.2 7.60322C6.2625 7.71572 4.21875 7.7251 2.39062 9.6376C0.946875 11.0907 0.4875 14.4001 0.4875 14.4001C0.4875 14.4001 0 18.2907 0 22.172V25.8095C0 29.6907 0.478125 33.5813 0.478125 33.5813C0.478125 33.5813 0.946875 36.8907 2.38125 38.3438C4.20937 40.2563 6.60938 40.1907 7.67813 40.397C11.5219 40.7626 24 40.8751 24 40.8751C24 40.8751 34.0875 40.8563 40.8 40.3782C41.7375 40.2657 43.7812 40.2563 45.6094 38.3438C47.0531 36.8907 47.5219 33.5813 47.5219 33.5813C47.5219 33.5813 48 29.7001 48 25.8095V22.172C48 18.2907 47.5219 14.4001 47.5219 14.4001ZM19.0406 30.2251V16.7345L32.0062 23.5032L19.0406 30.2251Z"
+                  fill="white" />
+              </svg>
+            </a>
+            <a href="#" aria-label="TikTok"><svg width="24" height="24" viewBox="0 0 48 48"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path
+                  d="M30.145 0h-8.089v32.696c0 3.895-3.112 7.095-6.983 7.095-3.872 0-6.984-3.2-6.984-7.095 0-3.826 3.043-6.957 6.776-7.096V17.39C6.637 17.53 0 24.278 0 32.696 0 41.183 6.776 48 15.142 48c8.366 0 15.141-6.887 15.141-15.304V15.93c3.042 2.227 6.776 3.548 10.717 3.618v-8.21C34.916 11.13 30.145 6.122 30.145 0z"
+                  fill="currentColor" />
+              </svg></a>
+            <a href="#" aria-label="Telegram"><svg width="24" height="24" viewBox="0 0 48 48"
+                fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g clip-path="url(#clip0_318_75)">
+                  <path fill-rule="evenodd" clip-rule="evenodd"
+                    d="M48 24C48 37.2548 37.2548 48 24 48C10.7452 48 0 37.2548 0 24C0 10.7452 10.7452 0 24 0C37.2548 0 48 10.7452 48 24ZM24.8601 17.7179C22.5257 18.6888 17.8603 20.6984 10.8638 23.7466C9.72766 24.1984 9.13251 24.6404 9.07834 25.0726C8.98677 25.803 9.90142 26.0906 11.1469 26.4822C11.3164 26.5355 11.4919 26.5907 11.6719 26.6492C12.8973 27.0475 14.5457 27.5135 15.4026 27.5321C16.1799 27.5489 17.0475 27.2284 18.0053 26.5707C24.5423 22.158 27.9168 19.9276 28.1286 19.8795C28.2781 19.8456 28.4852 19.803 28.6255 19.9277C28.7659 20.0524 28.7521 20.2886 28.7372 20.352C28.6466 20.7383 25.0562 24.0762 23.1982 25.8036C22.619 26.3421 22.2081 26.724 22.1242 26.8113C21.936 27.0067 21.7443 27.1915 21.56 27.3692C20.4215 28.4667 19.5678 29.2896 21.6072 30.6336C22.5873 31.2794 23.3715 31.8135 24.1539 32.3463C25.0084 32.9282 25.8606 33.5085 26.9632 34.2313C27.2442 34.4155 27.5125 34.6068 27.7738 34.7931C28.7681 35.5019 29.6615 36.1388 30.7652 36.0373C31.4065 35.9782 32.0689 35.3752 32.4053 33.5767C33.2004 29.3263 34.7633 20.1169 35.1244 16.3219C35.1561 15.9895 35.1163 15.5639 35.0843 15.3771C35.0523 15.1904 34.9855 14.9242 34.7427 14.7272C34.4552 14.4939 34.0113 14.4447 33.8127 14.4482C32.91 14.4641 31.5251 14.9456 24.8601 17.7179Z"
+                    fill="white" />
+                </g>
+                <defs>
+                  <clipPath id="clip0_318_75">
+                    <rect width="48" height="48" fill="white" />
+                  </clipPath>
+                </defs>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="links">
+        <a href="https://github.com/TODO">project repo</a>
+        <a href="https://monome.org">monome</a>
+        <a href="https://monome.org/docs/grid/">grid</a>
+        <a href="https://monome.org/docs/arc/">arc</a>
+        <a href="https://monome.org/docs/norns/">norns</a>
+      </div>
+      <p>oscgard is open source under GPL-3.0</p>
+    </div>
+  </footer>
+
+  <script>
+    (function () {
+      const canvas = document.getElementById('asgard');
+      const ctx = canvas.getContext('2d');
+
+      const W = 512, H = 112;
+      canvas.width = W;
+      canvas.height = H;
+
+      const IMG_W = 128, IMG_H = 24;
+      const CELL = 4;
+      const BLOCK = 3;
+      const GRID_W = IMG_W * CELL;
+      const GRID_H = IMG_H * CELL;
+      const OX = (W - GRID_W) / 2;
+      const OY = (H - GRID_H) / 2;
+
+      const PI2 = Math.PI * 2;
+      const FPS = 15;
+      const FRAME_MS = 1000 / FPS;
+      const BG = 10; // 0x0a
+
+      let seed = 77;
+      function rng() { seed = (seed * 16807) % 2147483647; return seed / 2147483647; }
+
+      const img = new Image();
+      img.src = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAAAYCAYAAAAyC/XlAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAA3pJREFUeAHtmf112kAMwEVf/y8b5DYI2YBO0GwQZ4KQCTATkEyAM0FGIJ0AOoHJBE0nUCUsJ4e4L8xHaN/93tMDfLo7nSWf5AMgk8lkMpkwiNgnWZCUkDkbyB8jkprEwLGhSYaQOTv28UvPGmRKHwM4DFWv13uCTGcO7A/NkvxzvzEZbrO1rbi2GY4+dHMDmc5YKddHaemayDi/Hf3HrcI4NkFsIro+xxwEB0ecV8f8g5H8z7qeMcaAfgaOgYxngsIzxhwye0H3sML9A8D4nPwl0O8NMv89X+EEYJNvSnV5EujyAz4KoCXJdypa3iTSeVcx0laRvEKcO5K+fC9prEnA1r7MYe+A7zYE+hX0MVOXWf/R06UvdrUUnsL5GxwT9GOUXpuPpo4xvCkA/XmslpvmskkXlgvZxmrV30DaGnUOHEX0nx02zxLmedBrjOjPlf5Ngk5LKe3j2L3AQArYJQBGVttAtQVrADHAV9EuMMGRjjmOUl9g80Y0ENHV8zjSVwduLAB0YM4cOnN0U0p7a+NDYJ5ONcAGtD3xBC8kE/q+hB0g/RXJFX29JVmpZg6mmhePpzjNCiAOfuX1yRrvlQo7bATnBdu4gu0Um8SuNcAtOxM6Qn0r+qgkeu28zBQk/ARVoRydCo1zrca34YB8cej3JNDf7ZWgtJ983iGWun9HLtTvlHpmA7FxGapPQpykCNSQsfwkVdBErZ33DDRPWQHNTlNBd1bwEQBD2HTii8gacfI1zVeA21aj7OQa4SrlYUD/MS3bVli/n3gu6EbnN7ZDBUB/R32Qm1fIbsC5b2g1G75Gbfw2cN9l17HTFEYKJJn/MeCsiuQSPt4M1m8KEgShm896xtPWBuRPaI7OKzgefv+g/5SodOgazxi1oz8XJwMpQIaWDDxjFOg/9ZrhdhG4gETQU0Bi84byjGlFqHHYN1c6yUWg0p2j+5jdNWdLaetB2PZpcAx0B4HtwFb0b5Y7X1/PIritHzC2xO3q+0HaKnV9CAngZiVt2zaV3yZxnBq3mUqb7+x+BOG12oyttpDz1/Ni2C92m4uS57H/DWRDLyP3gB2Xkm8eHVuwnYP/RMbRxdGkTQNi+EXiOK7x1rZJELQHMa+x/Kv0NXzYw/fG99/HxJfG1HrebXFcD5Hql5ZfdrGbBAYOgjKfBzY7cI2f/AqdyWQymX+Ov9H0ywzf8QobAAAAAElFTkSuQmCC';
+
+      // Pre-baked static frame (ImageData with all opaque pixels drawn once)
+      let staticFrame = null;
+      // Only shimmer pixels need per-frame work
+      let shimmerPixels = null; // [{baseAlpha, phase, speed, wave2, speed2, offsets}]
+
+      img.onload = function () {
+        const tmp = document.createElement('canvas');
+        tmp.width = IMG_W;
+        tmp.height = IMG_H;
+        const tctx = tmp.getContext('2d');
+        tctx.drawImage(img, 0, 0);
+        const src = tctx.getImageData(0, 0, IMG_W, IMG_H).data;
+
+        // Build static frame: background + opaque pixels
+        staticFrame = ctx.createImageData(W, H);
+        const buf = staticFrame.data;
+
+        // Fill with background color
+        for (let i = 0; i < buf.length; i += 4) {
+          buf[i] = BG; buf[i + 1] = BG; buf[i + 2] = BG; buf[i + 3] = 255;
+        }
+
+        shimmerPixels = [];
+
+        for (let y = 0; y < IMG_H; y++) {
+          for (let x = 0; x < IMG_W; x++) {
+            const si = (y * IMG_W + x) * 4;
+            const a = src[si + 3];
+            if (a === 0) continue;
+
+            // Precompute all pixel byte offsets in the ImageData buffer
+            const offsets = [];
+            for (let dy = 0; dy < BLOCK; dy++) {
+              for (let dx = 0; dx < BLOCK; dx++) {
+                offsets.push(((OY + y * CELL + dy) * W + (OX + x * CELL + dx)) * 4);
+              }
+            }
+
+            if (a === 255) {
+              // Static — bake into the base frame once
+              for (const off of offsets) {
+                buf[off] = 255; buf[off + 1] = 255; buf[off + 2] = 255;
+              }
+            } else {
+              // Shimmer — draw base value into static frame, animate later
+              const base = a / 255;
+              const v = Math.floor(base * 255);
+              for (const off of offsets) {
+                buf[off] = v; buf[off + 1] = v; buf[off + 2] = v;
+              }
+              shimmerPixels.push({
+                baseAlpha: base,
+                phase: rng() * PI2,
+                speed: rng() * 0.8 + 0.3,
+                wave2: rng() * PI2,
+                speed2: rng() * 0.5 + 0.15,
+                offsets: offsets,
+              });
+            }
+          }
+        }
+
+        requestAnimationFrame(draw);
+      };
+
+      let lastFrame = 0;
+
+      function draw(time) {
+        requestAnimationFrame(draw);
+
+        // Throttle to target FPS
+        if (time - lastFrame < FRAME_MS) return;
+        lastFrame = time;
+
+        const t = time / 1000;
+
+        // Copy static frame
+        const frame = new Uint8ClampedArray(staticFrame.data);
+
+        // Only update shimmer pixels (~518 pixels, not all 3072)
+        for (let i = 0; i < shimmerPixels.length; i++) {
+          const p = shimmerPixels[i];
+          const shimmer = Math.sin(t * p.speed + p.phase) * 0.5
+            + Math.sin(t * p.speed2 + p.wave2) * 0.15;
+          let alpha = p.baseAlpha + shimmer * p.baseAlpha;
+          if (alpha < 0.02) alpha = 0.02;
+          else if (alpha > 1.0) alpha = 1.0;
+          const v = (alpha * 255) | 0;
+          const offsets = p.offsets;
+          for (let j = 0; j < offsets.length; j++) {
+            const off = offsets[j];
+            frame[off] = v; frame[off + 1] = v; frame[off + 2] = v;
+          }
+        }
+
+        ctx.putImageData(new ImageData(frame, W, H), 0, 0);
+      }
+    })();
+  </script>
+
+  <script>
+    (function () {
+      const scroller = document.getElementById('menuScroller');
+      const ul = scroller.querySelector('ul');
+      const items = Array.from(ul.querySelectorAll('li'));
+      const count = items.length;
+      const DWELL = 1800; // ms per item
+      const TRANSITION = 600; // ms scroll between items
+
+      // Duplicate items above and below for seamless looping
+      items.forEach(li => ul.appendChild(li.cloneNode(true)));
+      const frag = document.createDocumentFragment();
+      items.forEach(li => frag.appendChild(li.cloneNode(true)));
+      ul.insertBefore(frag, ul.firstChild);
+
+      const allItems = Array.from(ul.querySelectorAll('li'));
+
+      function applyStyles(activeFloat) {
+        const centerIdx = activeFloat + count;
+
+        allItems.forEach((li, i) => {
+          const dist = Math.abs(i - centerIdx);
+          const opacity = Math.max(0, 1 - dist * 0.35);
+          const scale = Math.max(0.6, 1 - dist * 0.1);
+          li.style.opacity = opacity;
+          li.style.transform = `scale(${scale})`;
+          li.classList.toggle('active', dist < 0.5);
+        });
+
+        // Position the ul so centerIdx item is in the middle
+        const itemH = allItems[0].offsetHeight;
+        const scrollerH = scroller.offsetHeight;
+        const targetY = -(centerIdx * itemH - scrollerH / 2 + itemH / 2);
+        ul.style.transform = `translateY(${targetY}px)`;
+      }
+
+      let current = 0;
+      let startTime = null;
+      let phase = 'dwell'; // 'dwell' or 'scroll'
+      let phaseStart = 0;
+
+      function tick(time) {
+        if (startTime === null) startTime = time;
+        const elapsed = time - startTime - phaseStart;
+
+        if (phase === 'dwell') {
+          applyStyles(current);
+          if (elapsed >= DWELL) {
+            phase = 'scroll';
+            phaseStart = time - startTime;
+          }
+        } else {
+          const progress = Math.min(elapsed / TRANSITION, 1);
+          // Ease in-out
+          const ease = progress < 0.5
+            ? 2 * progress * progress
+            : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+          applyStyles(current + ease);
+          if (progress >= 1) {
+            current = (current + 1) % count;
+            phase = 'dwell';
+            phaseStart = time - startTime;
+          }
+        }
+
+        requestAnimationFrame(tick);
+      }
+
+      requestAnimationFrame(tick);
+    })();
+
+    // Confetti on success step
+    (() => {
+      const el = document.getElementById('success-step');
+      let fired = false;
+      const mid = window.innerHeight / 2;
+      const margin = window.innerHeight * 0.15;
+      const observer = new IntersectionObserver(([entry]) => {
+        if (entry.isIntersecting && !fired) {
+          const rect = entry.boundingClientRect;
+          const center = rect.top + rect.height / 2;
+          if (Math.abs(center - mid) < margin) {
+            fired = true;
+            observer.disconnect();
+            spawnConfetti(el);
+          }
+        }
+      }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+      observer.observe(el);
+
+      function spawnConfetti(target) {
+        const rect = target.getBoundingClientRect();
+        const colors = ['#F19E47', '#f3f4f5', '#e8c547', '#fff'];
+        const count = 40;
+        for (let i = 0; i < count; i++) {
+          const dot = document.createElement('span');
+          dot.style.cssText = `
+            position: fixed;
+            left: ${rect.left + rect.width * Math.random()}px;
+            top: ${rect.top + rect.height / 2}px;
+            width: ${3 + Math.random() * 5}px;
+            height: ${3 + Math.random() * 5}px;
+            background: ${colors[Math.floor(Math.random() * colors.length)]};
+            border-radius: ${Math.random() > 0.5 ? '50%' : '1px'};
+            pointer-events: none;
+            z-index: 1000;
+            opacity: 1;
+          `;
+          document.body.appendChild(dot);
+
+          const angle = -Math.PI / 2 + (Math.random() - 0.5) * Math.PI;
+          const speed = 120 + Math.random() * 200;
+          const vx = Math.cos(angle) * speed;
+          const vy = Math.sin(angle) * speed;
+          const gravity = 400;
+          const spin = (Math.random() - 0.5) * 720;
+          const duration = 1000 + Math.random() * 600;
+          const start = performance.now();
+          const startX = parseFloat(dot.style.left);
+          const startY = parseFloat(dot.style.top);
+
+          function anim(now) {
+            const t = (now - start) / 1000;
+            const progress = (now - start) / duration;
+            if (progress >= 1) { dot.remove(); return; }
+            dot.style.left = (startX + vx * t) + 'px';
+            dot.style.top = (startY + vy * t + 0.5 * gravity * t * t) + 'px';
+            dot.style.transform = `rotate(${spin * t}deg)`;
+            dot.style.opacity = Math.max(0, 1 - progress * progress);
+            requestAnimationFrame(anim);
+          }
+          requestAnimationFrame(anim);
+        }
+      }
+    })();
+  </script>
+
+</body>
+
+</html>
