@@ -7,8 +7,7 @@
   <title>oscgard — virtual monome devices for norns</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link
-    href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&family=Pixelify+Sans:wght@700&display=swap"
+  <link href="https://fonts.googleapis.com/css2?family=Kode+Mono:wght@400..700&display=swap"
     rel="stylesheet">
 
 
@@ -73,8 +72,15 @@
       text-decoration: underline;
     }
 
+    @font-face {
+      font-family: "04B_03";
+      src: url("04B_03__.woff2") format("woff2");
+      font-weight: normal;
+      font-style: normal;
+    }
+
     .accent-font {
-      font-family: "Pixelify Sans", sans-serif;
+      font-family: "04B_03", sans-serif;
     }
 
     p {
@@ -84,6 +90,11 @@
 
     p:last-child {
       margin-bottom: 0;
+    }
+
+    ol li,
+    ul li {
+      margin-left: 1em;
     }
 
     @keyframes float {
@@ -137,9 +148,9 @@
     }
 
     section .menu-scroller ul li {
-      font-family: "Pixelify Sans", sans-serif;
-      font-size: 1.4em;
-      line-height: 2;
+      font-family: "04B_03", sans-serif;
+      font-size: 4em;
+      line-height: 1;
       white-space: nowrap;
       color: var(--fg);
       margin-bottom: 0;
@@ -158,7 +169,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      min-height: 100dvh;
+      min-height: 100vh;
       padding: 0 20%;
       background-image:
         linear-gradient(to bottom, transparent 80%, var(--bg) 100%),
@@ -195,7 +206,7 @@
     }
 
     main {
-      max-width: 80%;
+      max-width: min(80%, 1280px);
       margin: 0 auto;
       overflow: hidden;
     }
@@ -221,7 +232,7 @@
 
     section ul {
       color: var(--muted);
-      margin: 0 0 16px 20px;
+      /* margin: 0 0 16px 20px; */
       font-size: 0.9rem;
     }
 
@@ -369,6 +380,32 @@
       font-size: 0.85rem;
       line-height: 1.7;
       margin: 16px 0;
+      position: relative;
+    }
+
+    .copy-btn {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 2px 6px;
+      font-size: 0.7rem;
+      font-family: inherit;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    pre:hover .copy-btn {
+      opacity: 1;
+    }
+
+    .copy-btn:hover {
+      color: var(--fg);
+      border-color: var(--fg);
     }
 
     code {
@@ -451,6 +488,36 @@
     }
 
     .specs td:last-child {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .specs-list {
+      display: none;
+      margin: 24px 0;
+      font-size: 0.9rem;
+    }
+
+    .specs-list li {
+      border-bottom: 1px solid var(--border);
+      padding: 10px 0;
+    }
+
+    .specs-list .spec-label {
+      color: var(--muted);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .specs-list .spec-values {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      margin-top: 4px;
+    }
+
+    .specs-list .spec-accent {
       color: var(--accent);
       font-weight: 500;
     }
@@ -632,15 +699,28 @@
     }
 
     .touchosc-link {
-      border-bottom: 3px var(--accent) dashed;
+      border-bottom: none;
       position: relative;
+      background-image: repeating-linear-gradient(to right,
+          var(--accent) 0,
+          var(--accent) 4px,
+          transparent 4px,
+          transparent 8px);
+      background-size: 8px 4px;
+      background-position: bottom left;
+      background-repeat: repeat-x;
+      padding-bottom: 4px;
     }
 
     .touchosc-link:hover {
       text-decoration: none;
       position: relative;
       color: #f3f4f5;
-      border-bottom: 3px #f3f4f5 dashed;
+      background-image: repeating-linear-gradient(to right,
+          #f3f4f5 0,
+          #f3f4f5 4px,
+          transparent 4px,
+          transparent 8px);
     }
 
     .touchosc-link img {
@@ -677,11 +757,19 @@
     .diagram-vertical {
       display: flex;
       flex-direction: column;
+      flex-wrap: nowrap;
+      align-items: stretch;
+    }
+
+    .diagram-vertical .node {
+      min-width: auto;
+      width: 100%;
     }
 
     .arrow-row {
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: 0.5em;
     }
 
@@ -875,18 +963,28 @@
         flex-direction: column;
       }
 
-      .diagram .arrow {
-        transform: rotate(90deg);
-      }
 
       .diagram .node {
         min-width: auto;
         width: 100%;
+        padding: 12px 16px;
+      }
+
+      .specs {
+        display: none;
+      }
+
+      .specs-list {
+        display: block;
       }
 
       pre {
         font-size: 0.75rem;
         padding: 14px;
+      }
+
+      .copy-btn {
+        opacity: 1;
       }
 
       .clients-callout {
@@ -902,7 +1000,30 @@
       }
 
       .steps li {
-        padding: 12px 0 12px 40px;
+        padding: 12px 0 12px 36px;
+      }
+
+      .steps li ul,
+      .steps li ol {
+        padding-left: 0.5em;
+      }
+
+      .install-options {
+        padding-left: 0;
+      }
+
+      ol {
+        padding-left: 1.2em;
+      }
+
+      ul,
+      .section ul {
+        padding-left: 0;
+      }
+
+      section .menu-scroller ul li {
+        font-size: 2em;
+        line-height: 1;
       }
     }
   </style>
@@ -925,7 +1046,7 @@
   <main class="container">
     <section class="section-col">
       <h2>Getting started</h2>
-      <ol style="margin-left: 2em;">
+      <ol>
         <li>
           <p>Install the mod</p>
           <ul class="install-options">
@@ -938,7 +1059,8 @@
               <pre><code>cd ~/dust/code && git clone https://github.com/sasha-ilatovskii/oscgard</code></pre>
             </li>
             <li>
-              <a>download zip</a> and extract to dust/code
+              <a href="https://github.com/sasha-ilatovskii/oscgard/archive/refs/heads/main.zip">download
+                zip</a> and extract to dust/code
             </li>
           </ul>
         </li>
@@ -977,8 +1099,8 @@
           </ul>
           </p>
         </li>
-        <li id="success-step">
-          You're good and have the emulated device up and running!
+        <li id="success-step" class="accent-font" style="font-size: 2em;">
+          <strong>You're good and have the emulated device up and running!</strong>
         </li>
       </ol>
     </section>
@@ -994,7 +1116,8 @@
         <span class="accent-font protocol-cta-get">
           GET<br />
           the full-featured<br />
-          <a href="#" class="touchosc-link">
+          <a href="https://ilatovskii.gumroad.com/l/oscgard-companion" class="touchosc-link"
+            target="_blank">
             TouchOSC project
             <img class="pointer-img"
               src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIGZpbGw9Im5vbmUiIHZpZXdCb3g9IjAgMCA3NiAxMDEiPgogIDxwYXRoIGZpbGw9IiM3NzciIGQ9Ik03MiAzOXE0IDEgNCA0djI5cTAgNC00IDR2OXEwIDQtNCA0djhxMCA0LTQgNEgyMnEtMyAwLTQtNHYtOHoiLz4KICA8cGF0aCBmaWxsPSIjZmZmIiBkPSJNMjggMHE0IDEgNCA0IDQgMSA0IDR2MTNoNXE0IDEgNCA0aDlxNCAxIDQgNGg0cTQgMSA0IDQgNCAxIDQgNCA0IDEgNCA0djI5cTAgNC00IDR2OXEwIDQtNCA0djhxMCA0LTQgNEgyMHEtMyAwLTQtNHYtOHEtMyAwLTQtNHYtNXEtMyAwLTQtNHYtNXEtMyAwLTQtNHYtM3EtMyAwLTQtNFY0NXExLTMgNC00IDEtMyA0LTRoNFY4cTEtMyA0LTQgMS0zIDQtNHoiLz4KICA8cGF0aCBmaWxsPSIjMDAwIiBkPSJNMjQgOTFoMzR2LThoNHYxMkgyMFY4M2g0em0tNC04aC00di05aDR6bTQ2IDBoLTRWNzBoNHptLTUwLTloLTR2LTloNHptNTQtNGgtNFY0MWg0em0tNTgtNUg4di03aDR6bS00LTdINFY0NWg0em0xMiAwaC00VjQ1SDh2LTRoOFY4aDR6bTQyLTIxaC00djEyaC00VjMzaDh6TTMyIDI1aDl2NGgtOXYxNmgtNFY4aDR6bTIyIDhoLTl2MTJoLTRWMjloMTN6bTEyIDhoLTR2LTRoNHpNMjggOGgtOFY0aDh6Ii8+Cjwvc3ZnPgo="
@@ -1024,7 +1147,6 @@
           <ul>
             <li>ADD DEVICE</li>
             <li>GRID or ARC</li>
-            <li>SELECT VPORT</li>
             <li>SCANNING</li>
             <li>GRID0001</li>
             <li>CONNECTED</li>
@@ -1152,6 +1274,28 @@
           </tr>
         </tbody>
       </table>
+      <ul class="specs-list">
+        <li>
+          <div class="spec-label">Messages for full refresh</div>
+          <div class="spec-values"><span>Others: up to 128</span><span class="spec-accent">oscgard:
+              1</span></div>
+        </li>
+        <li>
+          <div class="spec-label">Bytes for full refresh</div>
+          <div class="spec-values"><span>Others: ~2,560</span><span class="spec-accent">oscgard:
+              ~140</span></div>
+        </li>
+        <li>
+          <div class="spec-label">Atomicity</div>
+          <div class="spec-values"><span>Others: Sequential</span><span class="spec-accent">oscgard:
+              Atomic</span></div>
+        </li>
+        <li>
+          <div class="spec-label">Refresh rate</div>
+          <div class="spec-values"><span>Others: -</span><span class="spec-accent">oscgard: Adjust
+              to your network</span></div>
+        </li>
+      </ul>
     </section>
 
     <!-- Script integration -->
@@ -1192,7 +1336,8 @@ end</code></pre>
     <!-- CTA: two paths -->
     <section class="cta-section">
       <h2 class="cta-headline">One more thing...</h2>
-      <a class="accent-font cta-tagline">THE MOST POWERFUL TOUCHOSC
+      <a class="accent-font cta-tagline" href="https://ilatovskii.gumroad.com/l/oscgard-companion"
+        target="_blank">THE MOST POWERFUL TOUCHOSC
         PROJECT<br />FOR EMULATING MONOME CONTROLLERS</a>
 
       <div class="cta-paths">
@@ -1209,7 +1354,9 @@ end</code></pre>
               of the box!</li>
           </ul>
           </p>
-          <a href="#" class="cta-button">Get on Gumroad</a>
+          <a href="https://ilatovskii.gumroad.com/l/oscgard-companion" target="_blank"
+            class="cta-button">Get on
+            Gumroad</a>
         </div>
       </div>
     </section>
@@ -1227,15 +1374,17 @@ end</code></pre>
           <h3>Donate</h3>
           <p>Buy me a coffee, fund a feature, or just show some love.</p>
           <div style="flex: 1 1 auto; display: flex; align-items: center;justify-content: center;">
-            <a href="#" class="cta-button">Donate</a>
+            <a href="https://www.donationalerts.com/r/tkpp" target="_blank"
+              class="cta-button">Donate</a>
           </div>
         </div>
         <div class="support-card">
           <h3>Follow along</h3>
           <p>Updates, demos, and behind-the-scenes stuff.</p>
           <div class="social-links">
-            <a href="#" aria-label="Instagram"><svg width="24" height="24" viewBox="0 0 48 48"
-                fill="none" xmlns="http://www.w3.org/2000/svg">
+            <a href="https://www.instagram.com/sasha_ilatovskii/" target="_blank"
+              aria-label="Instagram"><svg width="24" height="24" viewBox="0 0 48 48" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M24 4.322c6.413 0 7.172.028 9.694.14 2.344.104 3.61.497 4.453.826 1.116.43 1.922.956 2.757 1.79.843.844 1.36 1.641 1.79 2.757.329.843.723 2.118.827 4.462.112 2.531.14 3.29.14 9.703 0 6.413-.028 7.172-.14 9.694-.104 2.344-.498 3.61-.826 4.453-.431 1.116-.957 1.922-1.79 2.757-.845.843-1.642 1.36-2.758 1.79-.843.329-2.118.723-4.462.826-2.531.113-3.29.14-9.694.14-6.412 0-7.172-.027-9.694-.14-2.343-.103-3.609-.497-4.453-.825-1.115-.431-1.922-.957-2.756-1.791-.844-.844-1.36-1.641-1.791-2.756-.328-.844-.722-2.119-.825-4.454-.113-2.531-.14-3.29-.14-9.693 0-6.413.027-7.172.14-9.694.103-2.344.497-3.61.825-4.453.431-1.116.957-1.922 1.79-2.757.845-.843 1.642-1.36 2.757-1.79.844-.329 2.119-.722 4.454-.826 2.522-.112 3.281-.14 9.693-.14zM24 0c-6.516 0-7.331.028-9.89.14-2.551.114-4.304.527-5.822 1.117-1.585.619-2.926 1.435-4.257 2.766C2.69 5.362 1.875 6.703 1.256 8.278.666 9.806.253 11.55.14 14.1.028 16.669 0 17.484 0 24s.028 7.331.14 9.89c.114 2.551.527 4.304 1.117 5.823.619 1.584 1.435 2.925 2.766 4.256 1.331 1.331 2.672 2.157 4.247 2.766 1.528.59 3.272 1.003 5.822 1.116 2.56.113 3.375.14 9.891.14s7.331-.027 9.89-.14c2.551-.113 4.304-.526 5.823-1.116 1.575-.609 2.916-1.435 4.247-2.766 1.331-1.331 2.156-2.672 2.766-4.247.59-1.528 1.003-3.272 1.116-5.822.113-2.56.14-3.375.14-9.891s-.027-7.331-.14-9.89c-.113-2.552-.526-4.305-1.116-5.823-.609-1.585-1.435-2.926-2.766-4.257C42.637 2.7 41.297 1.875 39.722 1.266 38.194.675 36.45.263 33.9.15 31.331.028 30.516 0 24 0z"
                   fill="currentColor" />
@@ -1244,21 +1393,23 @@ end</code></pre>
                   fill="currentColor" />
                 <circle cx="36.816" cy="11.184" r="2.878" fill="currentColor" />
               </svg></a>
-            <a href="#" aria-label="YouTube"><svg width="24" height="24" viewBox="0 0 48 48"
-                fill="none" xmlns="http://www.w3.org/2000/svg">
+            <a href="https://www.youtube.com/@turningknobspushingpads" target="_blank"
+              aria-label="YouTube"><svg width="24" height="24" viewBox="0 0 48 48" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M47.5219 14.4001C47.5219 14.4001 47.0531 11.0907 45.6094 9.6376C43.7812 7.7251 41.7375 7.71572 40.8 7.60322C34.0875 7.11572 24.0094 7.11572 24.0094 7.11572H23.9906C23.9906 7.11572 13.9125 7.11572 7.2 7.60322C6.2625 7.71572 4.21875 7.7251 2.39062 9.6376C0.946875 11.0907 0.4875 14.4001 0.4875 14.4001C0.4875 14.4001 0 18.2907 0 22.172V25.8095C0 29.6907 0.478125 33.5813 0.478125 33.5813C0.478125 33.5813 0.946875 36.8907 2.38125 38.3438C4.20937 40.2563 6.60938 40.1907 7.67813 40.397C11.5219 40.7626 24 40.8751 24 40.8751C24 40.8751 34.0875 40.8563 40.8 40.3782C41.7375 40.2657 43.7812 40.2563 45.6094 38.3438C47.0531 36.8907 47.5219 33.5813 47.5219 33.5813C47.5219 33.5813 48 29.7001 48 25.8095V22.172C48 18.2907 47.5219 14.4001 47.5219 14.4001ZM19.0406 30.2251V16.7345L32.0062 23.5032L19.0406 30.2251Z"
                   fill="white" />
               </svg>
             </a>
-            <a href="#" aria-label="TikTok"><svg width="24" height="24" viewBox="0 0 48 48"
-                fill="none" xmlns="http://www.w3.org/2000/svg">
+            <a href="https://www.tiktok.com/@sasha_ilatovskii" target="_blank"
+              aria-label="TikTok"><svg width="24" height="24" viewBox="0 0 48 48" fill="none"
+                xmlns="http://www.w3.org/2000/svg">
                 <path
                   d="M30.145 0h-8.089v32.696c0 3.895-3.112 7.095-6.983 7.095-3.872 0-6.984-3.2-6.984-7.095 0-3.826 3.043-6.957 6.776-7.096V17.39C6.637 17.53 0 24.278 0 32.696 0 41.183 6.776 48 15.142 48c8.366 0 15.141-6.887 15.141-15.304V15.93c3.042 2.227 6.776 3.548 10.717 3.618v-8.21C34.916 11.13 30.145 6.122 30.145 0z"
                   fill="currentColor" />
               </svg></a>
-            <a href="#" aria-label="Telegram"><svg width="24" height="24" viewBox="0 0 48 48"
-                fill="none" xmlns="http://www.w3.org/2000/svg">
+            <a href="https://t.me/tkpp0" target="_blank" aria-label="Telegram"><svg width="24"
+                height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clip-path="url(#clip0_318_75)">
                   <path fill-rule="evenodd" clip-rule="evenodd"
                     d="M48 24C48 37.2548 37.2548 48 24 48C10.7452 48 0 37.2548 0 24C0 10.7452 10.7452 0 24 0C37.2548 0 48 10.7452 48 24ZM24.8601 17.7179C22.5257 18.6888 17.8603 20.6984 10.8638 23.7466C9.72766 24.1984 9.13251 24.6404 9.07834 25.0726C8.98677 25.803 9.90142 26.0906 11.1469 26.4822C11.3164 26.5355 11.4919 26.5907 11.6719 26.6492C12.8973 27.0475 14.5457 27.5135 15.4026 27.5321C16.1799 27.5489 17.0475 27.2284 18.0053 26.5707C24.5423 22.158 27.9168 19.9276 28.1286 19.8795C28.2781 19.8456 28.4852 19.803 28.6255 19.9277C28.7659 20.0524 28.7521 20.2886 28.7372 20.352C28.6466 20.7383 25.0562 24.0762 23.1982 25.8036C22.619 26.3421 22.2081 26.724 22.1242 26.8113C21.936 27.0067 21.7443 27.1915 21.56 27.3692C20.4215 28.4667 19.5678 29.2896 21.6072 30.6336C22.5873 31.2794 23.3715 31.8135 24.1539 32.3463C25.0084 32.9282 25.8606 33.5085 26.9632 34.2313C27.2442 34.4155 27.5125 34.6068 27.7738 34.7931C28.7681 35.5019 29.6615 36.1388 30.7652 36.0373C31.4065 35.9782 32.0689 35.3752 32.4053 33.5767C33.2004 29.3263 34.7633 20.1169 35.1244 16.3219C35.1561 15.9895 35.1163 15.5639 35.0843 15.3771C35.0523 15.1904 34.9855 14.9242 34.7427 14.7272C34.4552 14.4939 34.0113 14.4447 33.8127 14.4482C32.91 14.4641 31.5251 14.9456 24.8601 17.7179Z"
@@ -1421,6 +1572,22 @@ end</code></pre>
   </script>
 
   <script>
+    document.querySelectorAll('pre code').forEach(block => {
+      const pre = block.closest('pre');
+      const btn = document.createElement('button');
+      btn.className = 'copy-btn';
+      btn.textContent = 'copy';
+      btn.addEventListener('click', () => {
+        navigator.clipboard.writeText(block.textContent).then(() => {
+          btn.textContent = 'copied';
+          setTimeout(() => btn.textContent = 'copy', 1500);
+        });
+      });
+      pre.appendChild(btn);
+    });
+  </script>
+
+  <script>
     (function () {
       const scroller = document.getElementById('menuScroller');
       const ul = scroller.querySelector('ul');
@@ -1494,39 +1661,36 @@ end</code></pre>
     // Confetti on success step
     (() => {
       const el = document.getElementById('success-step');
+      if (!el) return;
       let fired = false;
-      const mid = window.innerHeight / 2;
-      const margin = window.innerHeight * 0.15;
       const observer = new IntersectionObserver(([entry]) => {
         if (entry.isIntersecting && !fired) {
-          const rect = entry.boundingClientRect;
-          const center = rect.top + rect.height / 2;
-          if (Math.abs(center - mid) < margin) {
-            fired = true;
-            observer.disconnect();
-            spawnConfetti(el);
-          }
+          fired = true;
+          observer.disconnect();
+          spawnConfetti(el);
         }
-      }, { threshold: [0, 0.25, 0.5, 0.75, 1] });
+      }, { threshold: 0.5 });
       observer.observe(el);
 
       function spawnConfetti(target) {
         const rect = target.getBoundingClientRect();
         const colors = ['#F19E47', '#f3f4f5', '#e8c547', '#fff'];
-        const count = 40;
+        const count = 64;
         for (let i = 0; i < count; i++) {
+          const size = 2 + Math.random() * 4;
           const dot = document.createElement('span');
           dot.style.cssText = `
             position: fixed;
             left: ${rect.left + rect.width * Math.random()}px;
             top: ${rect.top + rect.height / 2}px;
-            width: ${3 + Math.random() * 5}px;
-            height: ${3 + Math.random() * 5}px;
+            width: ${size}px;
+            height: ${size}px;
             background: ${colors[Math.floor(Math.random() * colors.length)]};
-            border-radius: ${Math.random() > 0.5 ? '50%' : '1px'};
+            border-radius: 0;
             pointer-events: none;
             z-index: 1000;
             opacity: 1;
+            box-shadow: 0 0 0 1px ${colors[Math.floor(Math.random() * colors.length)]};
           `;
           document.body.appendChild(dot);
 
@@ -1547,7 +1711,6 @@ end</code></pre>
             if (progress >= 1) { dot.remove(); return; }
             dot.style.left = (startX + vx * t) + 'px';
             dot.style.top = (startY + vy * t + 0.5 * gravity * t * t) + 'px';
-            dot.style.transform = `rotate(${spin * t}deg)`;
             dot.style.opacity = Math.max(0, 1 - progress * progress);
             requestAnimationFrame(anim);
           }
