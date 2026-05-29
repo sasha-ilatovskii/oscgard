@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>gladshmr User Guide</title>
+</head>
+
+<body style="font-family: monospace;">
+	<header class="page-header">
+		<div class="container">
+			<h1>gladshmr User Guide</h1>
+		</div>
+	</header>
+	<main class="container">
+		<article class="section-col">
+			<p>
+				gladshmr is an iPad app for building a virtual monome-style control surface. You can
+				place grid-like and arc-like devices on a shared canvas, play them directly with
+				touch, receive LED state from other software, and send control events over Network
+				OSC or through a BLE Bridge.
+			</p>
+			<p>
+				Supported virtual devices:
+			</p>
+			<ul>
+				<li>Grid: 8x8, 16x8, and 16x16</li>
+				<li>Arc: 2 or 4 encoders</li>
+			</ul>
+			<h2>Quick Start</h2>
+			<ol>
+				<li>Open the side panel by dragging or tapping the handle on the left edge.</li>
+				<li>Tap the pencil button to enter edit mode.</li>
+				<li>Use the plus button to add a Grid or Arc.</li>
+				<li>Tap the wrench-and-screwdriver button on a device to open its settings.</li>
+				<li>Choose Network or BLE Bridge as the transport.</li>
+				<li>Leave edit mode to play the devices.</li>
+			</ol>
+			<p>
+				On a fresh install, gladshmr starts with one 4-encoder Arc and one 16x8 Grid. Your
+				layout, connections, and visual settings are saved automatically.
+			</p>
+			<h2>Layout and Devices</h2>
+			<p>
+				The main screen is a canvas made of layout cells. The default canvas is 4 columns by
+				3 rows. Open <strong>Grid Settings</strong> from the side panel to change the canvas
+				size from 1 to 8 columns and 1 to 8 rows.
+			</p>
+			<p>
+				In edit mode, you can move devices, resize them, open device settings with the
+				wrench-and-screwdriver button, or delete them with the trash button. If you shrink
+				the canvas, devices are clamped to fit where possible; devices that cannot fit may
+				be removed from the saved layout.
+			</p>
+			<p>
+				Use <strong>Add Device</strong> to create:
+			</p>
+			<ul>
+				<li>Arc with 2 or 4 encoders</li>
+				<li>Grid in 8x8, 16x8, or 16x16 edition</li>
+			</ul>
+			<p>
+				Device names are generated automatically and must be unique. The device name is also
+				its OSC prefix, so renaming a device changes the OSC addresses it uses.
+			</p>
+			<h2>Device Settings</h2>
+			<p>
+				In edit mode, tap the wrench-and-screwdriver button on a device to open its settings
+				panel.
+			</p>
+			<p>
+				The top field is the device name. The OSC prefix is shown below it. For example, a
+				device named <code class="inline-code">STG1681</code> uses addresses such as <code
+					class="inline-code">/STG1681/grid/key</code>.
+			</p>
+			<p>
+				The status row shows whether the device is ready, connected, waiting for Bluetooth,
+				or missing permission. Settings differ slightly by transport and device type.
+			</p>
+			<h3>Transport</h3>
+			<p>
+				<strong>Network</strong> uses OSC over Wi-Fi or LAN. The device listens on its
+				incoming port and can connect to another OSC target for outgoing touch and encoder
+				events.
+			</p>
+			<p>
+				<strong>BLE Bridge</strong> sends events through a connected bridge and maps the
+				virtual device to a bridge slot.
+			</p>
+			<h3>Arc Settings</h3>
+			<p>
+				Arc devices include two extra settings:
+			</p>
+			<ul>
+				<li><strong>Arc Layout</strong>: number of encoders per row. A 2-encoder Arc
+					supports 1 or 2 per row; a 4-encoder Arc supports 1, 2, or 4 per row.</li>
+				<li><strong>Encoder Input</strong>: <code class="inline-code">Ring</code> mode
+					tracks circular dragging around the ring; <code class="inline-code">Wheel</code>
+					mode shows a circular wheel control for stepped encoder movement.</li>
+			</ul>
+			<h3>Appearance</h3>
+			<p>
+				Each Grid and Arc can use one of two looks:
+			</p>
+			<ul>
+				<li><strong>Realistic</strong>: default hardware-style rendering</li>
+				<li><strong>VFD</strong>: blue-green phosphor display style</li>
+			</ul>
+			<p>
+				Open <strong>Shader Controls</strong> to tune the look. <strong>Reset</strong>
+				restores the visual defaults for the current device while keeping the selected look.
+			</p>
+			<h2>Network OSC</h2>
+			<p>
+				Each device owns its own OSC server and Bonjour service. gladshmr publishes OSC
+				services using <code class="inline-code">_osc._udp</code>, so compatible apps on the
+				same network can discover the virtual devices automatically.
+			</p>
+			<p>
+				Default incoming ports:
+			</p>
+			<ul>
+				<li>Grid starts at <code class="inline-code">8000</code></li>
+				<li>Arc starts at <code class="inline-code">8001</code></li>
+				<li>Additional devices use the next free port</li>
+			</ul>
+			<p>
+				In Network mode, the connection list shows discovered OSC services. Tap a service to
+				resolve and connect to it. If discovery is not available, choose <strong>Enter Host
+					Manually</strong> and enter the target host and UDP port.
+			</p>
+			<p>
+				The <strong>Incoming Port</strong> setting controls the local UDP port where that
+				virtual device receives OSC messages. When the port changes, gladshmr restarts the
+				local socket and republishes the Bonjour service.
+			</p>
+			<p>
+				Outgoing Network connections are saved per device and restored when the app launches
+				again.
+			</p>
+			<h2>Playing Grid</h2>
+			<p>
+				Touching a Grid sends key events. Coordinates use <code class="inline-code">x</code>
+				for column and <code class="inline-code">y</code> for row, with origin at the
+				top-left.
+			</p>
+			<p>
+				Outgoing Network event:
+			</p>
+			<pre><code class="language-text">
+/&lt;device&gt;/grid/key x y s
+</code></pre>
+			<p>
+				Where <code class="inline-code">s</code> is <code class="inline-code">1</code> for
+				press and <code class="inline-code">0</code> for release.
+			</p>
+			<p>
+				Grid supports multi-touch. When a finger moves from one cell to another, gladshmr
+				sends a release for the previous cell and a press for the new cell.
+			</p>
+			<h3>Grid LED Messages</h3>
+			<p>
+				gladshmr receives the following Grid LED messages:
+			</p>
+			<pre><code class="language-text">
+/&lt;device&gt;/grid/led/set x y s
+/&lt;device&gt;/grid/led/all s
+/&lt;device&gt;/grid/led/map x_off y_off rows[8]
+/&lt;device&gt;/grid/led/level/set x y l
+/&lt;device&gt;/grid/led/level/all l
+/&lt;device&gt;/grid/led/level/map x_off y_off levels[64]
+/&lt;device&gt;/grid/led/level/row x_off y levels...
+/&lt;device&gt;/grid/led/level/col x y_off levels...
+/&lt;device&gt;/grid/led/state hex_string
+</code></pre>
+			<p>
+				Binary LED messages use <code class="inline-code">0</code> or non-zero values. Level
+				messages use brightness levels from <code class="inline-code">0</code> to <code
+					class="inline-code">15</code>.
+			</p>
+			<p>
+				The state message expects one hex character per Grid cell. <code
+					class="inline-code">0</code> is off and <code class="inline-code">f</code> is
+				full brightness. The string length must match <code
+					class="inline-code">rows * cols</code>.
+			</p>
+			<p>
+				Two legacy/debug helper messages are also supported:
+			</p>
+			<pre><code class="language-text">
+/cell x y brightness
+/clear
+</code></pre>
+			<p>
+				<code class="inline-code">/cell</code> uses a floating-point brightness from <code
+					class="inline-code">0.0</code> to <code class="inline-code">1.0</code>.
+			</p>
+			<h2>Playing Arc</h2>
+			<p>
+				Arc devices send encoder and key events.
+			</p>
+			<p>
+				In <strong>Ring</strong> input mode, drag around a ring to send encoder delta. In
+				<strong>Wheel</strong> input mode, use the circular wheel control in the center of
+				the encoder. The small button near each ring sends key down/up.
+			</p>
+			<p>
+				Outgoing Network events:
+			</p>
+			<pre><code class="language-text">
+/&lt;device&gt;/enc/delta ring steps
+/&lt;device&gt;/enc/key ring state
+</code></pre>
+			<p>
+				<code class="inline-code">ring</code> is zero-based. <code
+					class="inline-code">state</code> is <code class="inline-code">1</code> for press
+				and <code class="inline-code">0</code> for release.
+			</p>
+			<h3>Arc LED Messages</h3>
+			<p>
+				gladshmr receives the following Arc ring LED messages:
+			</p>
+			<pre><code class="language-text">
+/&lt;device&gt;/ring/set ring led level
+/&lt;device&gt;/ring/all ring level
+/&lt;device&gt;/ring/map ring levels[64]
+/&lt;device&gt;/ring/range ring start end level
+/&lt;device&gt;/ring/state strings...
+</code></pre>
+			<p>
+				Arc LED levels use <code class="inline-code">0</code> to <code
+					class="inline-code">15</code>. Ring LEDs are addressed from <code
+					class="inline-code">0</code> to <code class="inline-code">63</code>.
+			</p>
+			<p>
+				For <code class="inline-code">/ring/state</code>, send one 64-character hex string
+				per ring. Each character represents one LED brightness level.
+			</p>
+			<h2>Tilt and Sensors</h2>
+			<p>
+				Grid devices support tilt sensor requests.
+			</p>
+			<p>
+				Enable or disable a sensor with:
+			</p>
+			<pre><code class="language-text">
+/&lt;device&gt;/tilt/set sensor state
+</code></pre>
+			<p>
+				Sensors:
+			</p>
+			<ul>
+				<li><code class="inline-code">0</code>: gravity/accelerometer-derived values</li>
+				<li><code class="inline-code">1</code>: gyroscope rotation-rate-derived values</li>
+			</ul>
+			<p>
+				When enabled, gladshmr captures a baseline and sends:
+			</p>
+			<pre><code class="language-text">
+/&lt;device&gt;/tilt sensor x y z
+</code></pre>
+			<p>
+				<code class="inline-code">x</code>, <code class="inline-code">y</code>, and <code
+					class="inline-code">z</code> are normalized to <code
+					class="inline-code">0...255</code>, centered around the captured baseline.
+			</p>
+			<h2>BLE Bridge</h2>
+			<p>
+				Use BLE Bridge mode when you want the virtual device to communicate through
+				compatible bridge hardware instead of direct Network OSC.
+			</p>
+			<p>
+				In a device settings panel:
+			</p>
+			<ol>
+				<li>Set <strong>Transport</strong> to <strong>BLE Bridge</strong>.</li>
+				<li>Tap refresh in the BLE Bridge section if no bridge appears.</li>
+				<li>Tap a discovered bridge to connect.</li>
+				<li>Assign the device to <strong>Slot 0</strong> or <strong>Slot 1</strong>.</li>
+			</ol>
+			<p>
+				Only two bridge slots are currently supported. Assigning a slot to one device clears
+				that slot from any other device, so each slot maps to at most one virtual device.
+			</p>
+			<p>
+				The bridge configuration is sent automatically after layout or slot changes. Config
+				writes are debounced briefly so rapid edits do not spam the bridge. gladshmr also
+				remembers the last bridge and tries to reconnect when Bluetooth becomes available.
+			</p>
+			<p>
+				If Bluetooth is off or permission is missing, the status row and BLE Bridge section
+				show that state.
+			</p>
+			<h2>Appearance and Shader Controls</h2>
+			<p>
+				Shader Controls are live visual controls for each device. Settings are saved per
+				device name.
+			</p>
+			<p>
+				The <strong>LED gradient</strong> toggle is a temporary preview. It fills the device
+				with a brightness gradient so you can judge the material and color settings. The
+				preview turns off automatically when the sheet closes.
+			</p>
+			<h3>Grid Controls</h3>
+			<p>
+				<strong>VFD Look</strong> appears when the device look is VFD:
+			</p>
+			<ul>
+				<li>Pixel density</li>
+				<li>Phosphor</li>
+				<li>Bloom</li>
+				<li>Glass</li>
+				<li>Structure</li>
+			</ul>
+			<p>
+				<strong>LED</strong> controls:
+			</p>
+			<ul>
+				<li>Core sharp</li>
+				<li>Diffuse sharp</li>
+				<li>Core mult</li>
+				<li>Diffuse mult</li>
+				<li>Glow radius</li>
+				<li>LED offset</li>
+			</ul>
+			<p>
+				<strong>Button</strong> controls:
+			</p>
+			<ul>
+				<li>Size</li>
+				<li>Radius</li>
+				<li>Thickness</li>
+				<li>Shadow</li>
+				<li>Ambient</li>
+			</ul>
+			<p>
+				<strong>Bleed</strong> controls:
+			</p>
+			<ul>
+				<li>Amount</li>
+				<li>Scatter</li>
+				<li>Silicone</li>
+			</ul>
+			<p>
+				<strong>Color</strong> controls:
+			</p>
+			<ul>
+				<li>Hue</li>
+				<li>Saturation</li>
+				<li>Lightness</li>
+			</ul>
+			<h3>Arc Controls</h3>
+			<p>
+				<strong>VFD Look</strong> appears when the device look is VFD:
+			</p>
+			<ul>
+				<li>Pixel density</li>
+				<li>Phosphor</li>
+				<li>Bloom</li>
+				<li>Glass</li>
+				<li>Structure</li>
+			</ul>
+			<p>
+				<strong>Appearance</strong> controls:
+			</p>
+			<ul>
+				<li>Groove width, depth shadow, rim intensity, rim sharpness, ambient</li>
+				<li>Diffuser blur and matte mix</li>
+				<li>Glow spread and brightness</li>
+				<li>Divider width, depth, and softness</li>
+				<li>Hue, saturation, and lightness</li>
+			</ul>
+			<p>
+				<strong>Jog Wheel</strong> controls:
+			</p>
+			<ul>
+				<li>Base R, Base G, Base B</li>
+				<li>Ridge count</li>
+				<li>Ridge intensity</li>
+				<li>LED glow</li>
+				<li>Sheen</li>
+			</ul>
+			<h2>Troubleshooting</h2>
+			<h3>No OSC devices are found</h3>
+			<ul>
+				<li>Make sure both apps are on the same Wi-Fi or LAN.</li>
+				<li>Allow Local Network permission for gladshmr in iPadOS settings.</li>
+				<li>Check that the target app publishes <code class="inline-code">_osc._udp</code>.
+				</li>
+				<li>Try <strong>Enter Host Manually</strong> with the target IP address and port.
+				</li>
+			</ul>
+			<h3>OSC messages do not arrive</h3>
+			<ul>
+				<li>Check the device incoming port.</li>
+				<li>Check the device name and OSC prefix.</li>
+				<li>Make sure the sender uses UDP.</li>
+				<li>Check firewall or router rules if sending from another machine.</li>
+			</ul>
+			<h3>Touches or encoder movement do not control the target</h3>
+			<ul>
+				<li>In Network mode, connect the device to an outgoing OSC target.</li>
+				<li>In BLE Bridge mode, connect a bridge and assign a slot.</li>
+				<li>Leave edit mode; devices ignore performance touches while edit mode is active.
+				</li>
+			</ul>
+			<h3>BLE Bridge is not found</h3>
+			<ul>
+				<li>Turn Bluetooth on.</li>
+				<li>Grant Bluetooth permission.</li>
+				<li>Tap refresh in the BLE Bridge section.</li>
+				<li>Make sure the bridge is powered and advertising the expected service.</li>
+			</ul>
+			<h3>LEDs appear in the wrong place</h3>
+			<ul>
+				<li>Confirm the virtual Grid size matches the software sending LED messages.</li>
+				<li>Remember that Grid coordinates start at the top-left.</li>
+				<li>Use <code class="inline-code">x</code> as column and <code
+						class="inline-code">y</code> as row.</li>
+				<li>For level messages, use values from <code class="inline-code">0</code> to <code
+						class="inline-code">15</code>.</li>
+				<li>For map messages, verify the expected 8x8 block offsets.</li>
+			</ul>
+			<h2>Persistence</h2>
+			<p>
+				gladshmr saves:
+			</p>
+			<ul>
+				<li>Device layout and canvas size</li>
+				<li>Device names</li>
+				<li>Incoming ports</li>
+				<li>Network targets</li>
+				<li>Arc layout and input mode</li>
+				<li>BLE slot assignments</li>
+				<li>Visual shader settings per device name</li>
+			</ul>
+			<p>
+				Renaming a device keeps its current connection and visual settings, and moves the
+				saved settings to the new name.
+			</p>
+		</article>
+	</main>
+</body>
+
+</html>
